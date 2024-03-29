@@ -8,7 +8,7 @@ async function sendMessage() {
     userMessageElement.textContent = `You: ${userInput}`;
 
     const data = {
-        model: "TheBloke/Mistral-7B-Instruct-v0.2-GGUF/mistral-7b-instruct-v0.2.Q6_K.gguf",
+        model: "TheBloke/Mistral-7B-Instruct-v0.2-GGUF/mistral-7b-instruct-v0.2.Q4_K_S.gguf",
         messages: [{
             role: "user",
             content: userInput
