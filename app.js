@@ -1,50 +1,48 @@
-const openAiApiKey = 'lm-studio';
-
 async function sendMessage() {
-    const userInput = document.getElementById('user-input').value;
-    const userMessageElement = document.getElementById('user-message');
-    const botMessageElement = document.getElementById('bot-message');
+    const userInputField = document.getElementById('user-input');
+    const userInput = userInputField.value.trim();
 
-    userMessageElement.textContent = `You: ${userInput}`;
+    if (!userInput) return; // Exit if the input is empty
 
-    const data = {
-        model: "TheBloke/Mistral-7B-Instruct-v0.2-GGUF/mistral-7b-instruct-v0.2.Q4_K_S.gguf",
-        messages: [{
-            role: "user",
-            content: userInput
-        }]
-    };
+    // Display user's message
+    document.getElementById('user-message').textContent = `You: ${userInput}`;
+    userInputField.value = ''; // Clear input field
+
+    const serverEndpoint = 'http://100.85.94.71:1234/v1/chat/completions'; // Your backend endpoint
 
     try {
-        const response = await fetch('http://localhost:1234/v1', {
+        const response = await fetch(serverEndpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${openAiApiKey}`
+                // If your server requires authentication, add your headers here
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify({
+                messages: [{
+                    role: "user",
+                    content: userInput
+                }]
+            })
         });
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const result = await response.json();
-        console.log(result);
+        const data = await response.json();
 
-        // Update the chat with the bot's response
-        botMessageElement.textContent = `Bot: ${result.choices[0].message.content}`;
+        // Assuming 'data' includes the chatbot's response in a property similar to the OpenAI API structure
+        const botReply = data.choices && data.choices.length > 0 ? data.choices[0].message.content : "I'm not sure how to respond to that.";
+
+        // Update chat interface with bot's response
+        document.getElementById('bot-message').textContent = `Bot: ${botReply}`;
     } catch (error) {
-        console.error('Error calling the OpenAI API:', error);
-        botMessageElement.textContent = `Bot: Sorry, I encountered an error.`;
+        console.error('Error sending message to server:', error);
+        document.getElementById('bot-message').textContent = `Bot: Sorry, I can't respond right now.`;
     }
-
-    // Clear the input field for the next message
-    document.getElementById('user-input').value = '';
 }
 
-// To prevent form submission
-document.querySelector('form').addEventListener('submit', function (event) {
+document.querySelector('form').addEventListener('submit', function(event) {
     event.preventDefault();
     sendMessage();
 });
